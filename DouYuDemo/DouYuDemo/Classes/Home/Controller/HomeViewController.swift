@@ -13,16 +13,17 @@ private let kTitleViewH : CGFloat = 40
 class HomeViewController: UIViewController {
 
     // MARK:- 懒加载PageTitleView
-        lazy  var pageTitleView : PageTitleView = {
+        lazy  var pageTitleView : PageTitleView = { [weak self] in
     
         let titleFrame = CGRect(x: 0, y: kStatusBarH + kNavigationBarH, width: kScreenW, height: kTitleViewH)
         let titles = ["推荐","游戏","娱乐","趣玩"]
         let titleView = PageTitleView(frame: titleFrame, titles: titles)
+            titleView.delegate = self
         return titleView
     }()
     
     // MARK:- 懒加载PageContentView
-    lazy var pageContentView : PageContentView = {
+    lazy var pageContentView : PageContentView = { [weak self] in
         // 1 确定内容Frame
         let contentH : CGFloat = kScreenH - (kStatusBarH + kNavigationBarH + kTitleViewH)
         let contentFrame  = CGRect(x: 0, y: kStatusBarH + kNavigationBarH + kTitleViewH, width: kScreenW, height: contentH)
@@ -35,8 +36,9 @@ class HomeViewController: UIViewController {
             childVcs.append(childVc)
         }
         
-        let contentView  = PageContentView(frame: contentFrame, childVcs: childVcs, parentVc: self)
-        
+        let contentView : PageContentView  = PageContentView(frame: contentFrame, childVcs: childVcs, parentVc: self)
+        contentView.delegate = self
+       
         return contentView
     
     }()
@@ -69,7 +71,6 @@ extension HomeViewController{
         
            view.addSubview(pageContentView)
         
-           pageContentView.backgroundColor = UIColor.purple
         
     }
     
@@ -88,3 +89,20 @@ extension HomeViewController{
     }
 
 }
+
+// MARK:- 实现协议
+extension HomeViewController : PageTitleViewDelegate{
+
+    func pageTitleView(titleView: PageTitleView, selectedIndex index: Int) {
+        pageContentView.setCurrentIndex(currentIndex: index)
+    }
+}
+// MARK:- 实现pageContentViewDelegate 代理
+extension HomeViewController : PageContentViewDelegate{
+
+    func pageContentView(pageContentView: PageContentView, progress: CGFloat, targetindex: Int, sourceIndex: Int) {
+        pageTitleView.setTitleWithProgress(progress: progress, targetIndex: targetindex, sourceIndex: sourceIndex)
+    }
+}
+
+
